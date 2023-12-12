@@ -36,7 +36,7 @@ jobs:
           GOOS: ${{ matrix.go-os }}
           GOARCH: ${{ matrix.go-arch }}
       - name: Release
-        uses: softprops/acti:on-gh-release@v1
+        uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: binaries/*
