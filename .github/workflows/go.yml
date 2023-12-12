@@ -43,17 +43,32 @@ jobs:
         run: |
           mkdir -p binaries
           go build -v -o binaries/mqttmachinestate-${{ matrix.go-os }}-${{ matrix.go-arch }} ./...
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: binaries-${{ matrix.go-os }}-${{ matrix.go-arch }}
+          path: binaries
+
+  collect-artifacts:
+    runs-on: ubuntu-latest
+    needs: [build]
+
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: binaries-*
 
   release:
-    needs: build
     runs-on: ubuntu-latest
+    needs: collect-artifacts
 
     steps:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: binaries/*
+          files: binaries-*/mqttmachinestate-*
           name: Release ${{ github.ref }}
           tag_name: ${{ github.ref }}
         env:
