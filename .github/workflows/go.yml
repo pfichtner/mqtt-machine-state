@@ -28,8 +28,9 @@ jobs:
           go get .
       - name: Build
         run: |
+          mkdir -p binaries
           if [ "$GOOS" != "darwin" ] || [ "$GOARCH" != "386" ]; then
-            go build -v -o myapp-$GOOS-$GOARCH ./...
+            go build -v -o binaries/mqttmachinestate-$GOOS-$GOARCH ./...
           fi
         env:
           GOOS: ${{ matrix.go-os }}
