@@ -44,9 +44,9 @@ jobs:
           GOARCH: ${{ matrix.arch }}
      - name: Upload Artifacts
        uses: actions/upload-artifact@v3
-        with:
-          name: binaries
-          path: binaries
+       with:
+         name: binaries
+         path: binaries
 
   release:
     runs-on: ubuntu-latest
