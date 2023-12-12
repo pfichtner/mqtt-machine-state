@@ -41,6 +41,7 @@ jobs:
           go get .
       - name: Build
         run: |
+          mkdir -p binaries
           go build -v -o binaries/mqttmachinestate-${{ matrix.go-os }}-${{ matrix.go-arch }} ./...
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2
@@ -65,12 +66,20 @@ jobs:
 
     steps:
       - name: Create Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          files=()
+          for file in binaries/*; do
+            [[ -f "$file" ]] && files+=("$file")
+          done
+          echo "::set-output name=files::${files[*]}"
+        id: set-output
+
+      - name: Upload Release Assets
+        uses: actions/upload-release-asset@v1
         with:
-          files: binaries/mqttmachinestate-*
-          name: Release ${{ github.ref }}
-          tag_name: ${{ github.ref }}
+          upload_url: ${{ needs.collect-artifacts.outputs.upload_url }}
+          asset_paths: ${{ steps.set-output.outputs.files }}
+        if: startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
