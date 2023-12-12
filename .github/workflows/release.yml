@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  create:
+    tags:
+      - '*'
+
+jobs:
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: binaries
+          path: .
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: binaries/*
+          tag_name: ${{ github.ref }}
+          title: Release ${{ github.ref }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get Release URL
+        run: echo "Release URL: ${{ steps.create_release.outputs.upload_url }}"
+
