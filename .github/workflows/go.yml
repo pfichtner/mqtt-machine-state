@@ -8,32 +8,23 @@ permissions:
   contents: read
 
 jobs:
-  check-matrix:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go-os: [linux, darwin, windows]
-        go-arch: [amd64, arm64, 386]
-
-    steps:
-      - name: Check Matrix Combination
-        run: |
-          if [ "${{ matrix.go-os }}" == "darwin" ] && [ "${{ matrix.go-arch }}" == "386" ]; then
-            echo "Skipping release for darwin/386 combination."
-            exit 0
-          fi
-
   build:
-    runs-on: ubuntu-latest
-    needs: check-matrix
+    runs-on: ${{ matrix.os == 'darwin' && 'macos-latest' || 'ubuntu-latest'}}
 
     strategy:
       matrix:
-        go-os: [linux, darwin, windows]
-        go-arch: [amd64, arm64, 386]
+        os: [linux, darwin, windows]
+        arch: [amd64, arm64, 386]
 
     steps:
-      - uses: actions/checkout@v4
+     - name: Check Matrix Combination
+      run: |
+        if [ "${{ matrix.os }}" == "darwin" ] && [ "${{ matrix.arch }}" == "386" ]; then
+          echo "Skipping release for darwin/386 combination."
+          exit 0
+        fi
+
+     - uses: actions/checkout@v4
       - name: Setup Go
         uses: actions/setup-go@v4
         with:
@@ -42,9 +33,16 @@ jobs:
       - name: Install dependencies
         run: |
           go get .
+        env:
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
+
       - name: Build
         run: |
-          go build -v -o binaries/mqttmachinestate-${{ matrix.go-os }}-${{ matrix.go-arch }} ./...
+          go build -v -o binaries/mqttmachinestate-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.os == 'windows' && '.exe' || '' }} ./...
+        env:
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
