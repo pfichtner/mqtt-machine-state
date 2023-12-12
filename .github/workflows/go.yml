@@ -15,14 +15,11 @@ jobs:
       matrix:
         os: [linux, darwin, windows]
         arch: [amd64, arm64, 386]
+        exclude:
+          - os: darwin
+            arch: 386
 
     steps:
-     - name: Check Matrix Combination
-       run: |
-        if [ "${{ matrix.os }}" == "darwin" ] && [ "${{ matrix.arch }}" == "386" ]; then
-          echo "Skipping release for darwin/386 combination."
-          exit 0
-        fi
      - uses: actions/checkout@v4
      - name: Setup Go
        uses: actions/setup-go@v4
