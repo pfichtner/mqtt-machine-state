@@ -35,3 +35,13 @@ jobs:
         env:
           GOOS: ${{ matrix.go-os }}
           GOARCH: ${{ matrix.go-arch }}
+      - name: Release
+        uses: softprops/acti:on-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: binaries/*
+          tag_name: ${{ github.ref }}
+          title: Release ${{ github.ref }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
