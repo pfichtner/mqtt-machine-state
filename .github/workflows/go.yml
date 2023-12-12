@@ -18,33 +18,32 @@ jobs:
 
     steps:
      - name: Check Matrix Combination
-      run: |
+       run: |
         if [ "${{ matrix.os }}" == "darwin" ] && [ "${{ matrix.arch }}" == "386" ]; then
           echo "Skipping release for darwin/386 combination."
           exit 0
         fi
-
      - uses: actions/checkout@v4
-      - name: Setup Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.20'
-          cache-dependency-path: subdir/go.sum
-      - name: Install dependencies
-        run: |
+     - name: Setup Go
+       uses: actions/setup-go@v4
+       with:
+         go-version: '1.20'
+         cache-dependency-path: subdir/go.sum
+     - name: Install dependencies
+       run: |
           go get .
-        env:
+       env:
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
 
-      - name: Build
-        run: |
+     - name: Build
+       run: |
           go build -v -o binaries/mqttmachinestate-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.os == 'windows' && '.exe' || '' }} ./...
-        env:
+       env:
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
+     - name: Upload Artifacts
+       uses: actions/upload-artifact@v3
         with:
           name: binaries
           path: binaries
