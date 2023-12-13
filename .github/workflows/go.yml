@@ -79,6 +79,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           artifacts: "binaries/*"
+          makeLatest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
