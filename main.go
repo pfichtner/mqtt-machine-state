@@ -40,7 +40,6 @@ func main() {
 
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(brokerURL)
-	opts.SetClientID("mqtt-client")
 	opts.SetAutoReconnect(true)
 	opts.SetKeepAlive(2 * time.Second)
 
@@ -64,8 +63,6 @@ func main() {
 	// Use a goroutine to handle the signal
 	go func() {
 		<-c
-		fmt.Println("\nDisconnecting from the MQTT broker...")
-
 		// Publish "offline" before disconnecting
 		token := client.Publish(topic, uint8(qos), retained, "offline")
 		token.Wait()
