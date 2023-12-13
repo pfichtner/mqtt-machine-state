@@ -21,4 +21,4 @@ Usage of ./mqttmachinestate-linux-amd64:
         Whether messages should be retained
   -topic string
         MQTT topic (default "theHostname/status")
-``
+```
