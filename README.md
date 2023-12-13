@@ -6,7 +6,7 @@ Before gettting stopped it publishes another message ("offline"). Additionally i
 
 ## Ok, what's that for!?
 
-I added this tiny program to the startup of my machines so each machine getting up and down publish their states to the mqtt broker, so you know which machines are up and which not. But the real value is that you can run automations on that. I have a server to which my workstations and servers can do their backups to. This backup server is not powered on permanently. When this server comes up the workstations should start doing there backups which now easily can be done by them by subscribing to the topic of the backup server (wait for the topic nameOfTheMachine/state to be "online")
+I added this tiny program to the startup of my machines so each machine getting up and down publish their states to the mqtt broker, so you know which machines are up and which not. But the real value is that you can run automations on that. I have a server to which my workstations and servers can do their backups to. This backup server is not powered on permanently. When this server comes up the workstations should start doing there backups which now easily can be done by them by subscribing to the topic of the backup server (wait for the topic nameOfThisMachine/state to be "online")
 
 ```
 ./mqttmachinestate-linux-amd64 -h
@@ -20,5 +20,5 @@ Usage of ./mqttmachinestate-linux-amd64:
   -retained
         Whether messages should be retained
   -topic string
-        MQTT topic (default "theHostname/status")
+        MQTT topic (default "nameOfThisMachine/status")
 ```
