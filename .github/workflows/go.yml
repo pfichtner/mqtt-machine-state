@@ -38,10 +38,15 @@ jobs:
        env:
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
-     - name: Install UPX
+     - name: Install UPX (linux)
        run: |
          sudo apt-get update
          sudo apt-get install -y upx
+       if: matrix.os == 'linux'
+     - name: Install UPX (macOS)
+       run: |
+         brew install upx
+       if: matrix.os == 'darwin'
      - name: Build
        run: |
           go build -ldflags="-s -w" -v -o binaries/mqttmachinestate-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.os == 'windows' && '.exe' || '' }} ./...
