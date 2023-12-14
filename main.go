@@ -1,23 +1,60 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"os/signal"
 	"time"
 
 	"github.com/eclipse/paho.mqtt.golang"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 )
 
+var (
+	configFile string
+	brokerHost string
+	port       int
+	topic      string
+	retained   bool
+	qos        int
+)
+
+func init() {
+	pflag.StringVarP(&configFile, "config", "c", "", "Config file name")
+	pflag.StringVarP(&brokerHost, "broker", "b", "", "MQTT broker host")
+	pflag.IntVarP(&port, "port", "p", 0, "MQTT broker port")
+	pflag.StringVarP(&topic, "topic", "t", "", "MQTT topic")
+	pflag.BoolVarP(&retained, "retained", "r", false, "Whether messages should be retained")
+	pflag.IntVarP(&qos, "qos", "q", 0, "Quality of Service (QoS) level")
+	pflag.CommandLine.SortFlags = false
+
+	pflag.Parse()
+
+	// Load configuration from file if provided
+	if configFile != "" {
+		viper.SetConfigFile(configFile)
+		if err := viper.ReadInConfig(); err != nil {
+			fmt.Println("Error reading config file:", err)
+			os.Exit(1)
+		}
+	}
+
+	// Bind config values to pflag (if not provided via command line)
+	viper.BindPFlag("broker", pflag.Lookup("broker"))
+	viper.BindPFlag("port", pflag.Lookup("port"))
+	viper.BindPFlag("topic", pflag.Lookup("topic"))
+	viper.BindPFlag("retained", pflag.Lookup("retained"))
+	viper.BindPFlag("qos", pflag.Lookup("qos"))
+}
+
 func main() {
-	var (
-		brokerHost string
-		port       int
-		topic      string
-		retained   bool
-		qos        int
-	)
+	// Use viper.GetString, viper.GetInt, etc., to get configuration values
+	brokerHost = viper.GetString("broker")
+	port = viper.GetInt("port")
+	topic = viper.GetString("topic")
+	retained = viper.GetBool("retained")
+	qos = viper.GetInt("qos")
 
 	// Compute the default topic value
 	hostname, err := os.Hostname()
@@ -27,14 +64,16 @@ func main() {
 	}
 	defaultTopic := fmt.Sprintf("%s/status", hostname)
 
-	// Parse command-line arguments
-	flag.StringVar(&brokerHost, "broker", "localhost", "MQTT broker host")
-	flag.IntVar(&port, "port", 1883, "MQTT broker port")
-	flag.StringVar(&topic, "topic", defaultTopic, "MQTT topic")
-	flag.BoolVar(&retained, "retained", false, "Whether messages should be retained")
-	flag.IntVar(&qos, "qos", 0, "Quality of Service (QoS) level")
-
-	flag.Parse()
+	// Use default values if not provided
+	if brokerHost == "" {
+		brokerHost = "localhost"
+	}
+	if port == 0 {
+		port = 1883
+	}
+	if topic == "" {
+		topic = defaultTopic
+	}
 
 	brokerURL := fmt.Sprintf("tcp://%s:%d", brokerHost, port)
 
