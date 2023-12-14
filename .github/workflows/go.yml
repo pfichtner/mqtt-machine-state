@@ -41,7 +41,7 @@ jobs:
 
      - name: Build
        run: |
-          go build -v -o binaries/mqttmachinestate-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.os == 'windows' && '.exe' || '' }} ./...
+          go build -ldflags="-s -w" -v -o binaries/mqttmachinestate-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.os == 'windows' && '.exe' || '' }} ./...
        env:
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
