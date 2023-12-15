@@ -12,9 +12,9 @@ I added this tiny program to the startup of my machines so each machine getting 
 ./mqttmachinestate-linux-amd64 -h
 Usage of ./mqttmachinestate:
   -c, --config string   Config file name
-  -b, --broker string   MQTT broker host
-  -p, --port int        MQTT broker port
-  -t, --topic string    MQTT topic
+  -b, --broker string   MQTT broker host (default "localhost")
+  -p, --port int        MQTT broker port (default 1883)
+  -t, --topic string    MQTT topic (default "c0337ce7/status")
   -r, --retained        Whether messages should be retained
   -q, --qos int         Quality of Service (QoS) level
 pflag: help requested

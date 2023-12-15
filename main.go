@@ -21,10 +21,17 @@ var (
 )
 
 func init() {
+	hostname, err := os.Hostname()
+	if err != nil {
+		fmt.Println("Error getting hostname:", err)
+		os.Exit(1)
+	}
+	topic := fmt.Sprintf("%s/status", hostname)
+
 	pflag.StringVarP(&configFile, "config", "c", "", "Config file name")
-	pflag.StringVarP(&brokerHost, "broker", "b", "", "MQTT broker host")
-	pflag.IntVarP(&port, "port", "p", 0, "MQTT broker port")
-	pflag.StringVarP(&topic, "topic", "t", "", "MQTT topic")
+	pflag.StringVarP(&brokerHost, "broker", "b", "localhost", "MQTT broker host")
+	pflag.IntVarP(&port, "port", "p", 1883, "MQTT broker port")
+	pflag.StringVarP(&topic, "topic", "t", topic, "MQTT topic")
 	pflag.BoolVarP(&retained, "retained", "r", false, "Whether messages should be retained")
 	pflag.IntVarP(&qos, "qos", "q", 0, "Quality of Service (QoS) level")
 	pflag.CommandLine.SortFlags = false
@@ -55,25 +62,6 @@ func main() {
 	topic = viper.GetString("topic")
 	retained = viper.GetBool("retained")
 	qos = viper.GetInt("qos")
-
-	// Compute the default topic value
-	hostname, err := os.Hostname()
-	if err != nil {
-		fmt.Println("Error getting hostname:", err)
-		os.Exit(1)
-	}
-	defaultTopic := fmt.Sprintf("%s/status", hostname)
-
-	// Use default values if not provided
-	if brokerHost == "" {
-		brokerHost = "localhost"
-	}
-	if port == 0 {
-		port = 1883
-	}
-	if topic == "" {
-		topic = defaultTopic
-	}
 
 	brokerURL := fmt.Sprintf("tcp://%s:%d", brokerHost, port)
 
