@@ -63,7 +63,7 @@ jobs:
      - name: Distribute CI build results
        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 # v4.0.0
        with:
-         name: binaries
+         name: binaries-${{ matrix.os }}-${{ matrix.arch }}
          path: "binaries/*"
 
      - name: Upload Artifacts
