@@ -10,15 +10,12 @@ I added this tiny program to the startup of my machines so each machine getting 
 
 ```
 ./mqttmachinestate-linux-amd64 -h
-Usage of ./mqttmachinestate-linux-amd64:
-  -broker string
-        MQTT broker host (default "localhost")
-  -port int
-        MQTT broker port (default 1883)
-  -qos int
-        Quality of Service (QoS) level
-  -retained
-        Whether messages should be retained
-  -topic string
-        MQTT topic (default "nameOfThisMachine/status")
+Usage of ./mqttmachinestate:
+  -c, --config string   Config file name
+  -b, --broker string   MQTT broker host
+  -p, --port int        MQTT broker port
+  -t, --topic string    MQTT topic
+  -r, --retained        Whether messages should be retained
+  -q, --qos int         Quality of Service (QoS) level
+pflag: help requested
 ```
