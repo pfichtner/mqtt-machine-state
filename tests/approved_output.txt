@@ -1,0 +1,8 @@
+Usage of ../mqttmachinestate:
+  -c, --config string   Config file name
+  -b, --broker string   MQTT broker host (default "localhost")
+  -p, --port int        MQTT broker port (default 1883)
+  -t, --topic string    MQTT topic (default "$$$SCRUBBED_HOSTNAME$$$/status")
+  -r, --retained        Whether messages should be retained
+  -q, --qos int         Quality of Service (QoS) level
+pflag: help requested

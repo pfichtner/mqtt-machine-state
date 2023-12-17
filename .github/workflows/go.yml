@@ -54,6 +54,20 @@ jobs:
        # if: matrix.os != 'windows' || (matrix.os == 'windows' && matrix.arch != 'amd64' && matrix.arch != 'arm64')
        if: matrix.os != 'windows' || matrix.arch != 'arm64'
 
+     - name: Run tests
+       run: |
+         cd tests
+         for script in *.sh; do
+           if [ -f "$script" ] && [ -x "$script" ]; then
+             echo "Running $script..."
+             ./"$script"
+           else
+             echo "Skipping non-executable or non-existent file: $script"
+           fi
+         done
+       # using qemu we could run arm binaries on linux as well
+       if: matrix.os == 'linux' && (matrix.arch == 'amd64' || matrix.arch == '386')
+
      - name: Upload Artifacts
        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 # v4.0.0
        with:
