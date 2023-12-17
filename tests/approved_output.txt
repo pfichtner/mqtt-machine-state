@@ -1,4 +1,4 @@
-Usage of ../binaries/mqttmachinestate:
+Usage of ../binaries/mqttmachinestate-linux-amd64
   -c, --config string   Config file name
   -b, --broker string   MQTT broker host (default "localhost")
   -p, --port int        MQTT broker port (default 1883)

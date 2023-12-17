@@ -20,7 +20,7 @@ start_mqtt_broker() {
 # Function to start the binary with the given broker port and return its PID
 start_binary() {
     local broker_port=$1
-    ../binaries/mqttmachinestate -p $broker_port >/dev/null 2>&1 &
+    ../binaries/mqttmachinestate-linux-amd64 -p $broker_port >/dev/null 2>&1 &
     echo $!
 }
 

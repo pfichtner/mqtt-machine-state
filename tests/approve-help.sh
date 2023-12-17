@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the path to the binary
-BINARY_PATH="../binaries/mqttmachinestate"
+BINARY_PATH="../binaries/mqttmachinestate-linux-amd64"
 
 # Set the path to the approved output file
 APPROVED_OUTPUT_FILE="approved_output.txt"
