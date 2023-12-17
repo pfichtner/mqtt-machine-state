@@ -67,8 +67,18 @@ func main() {
 
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(brokerURL)
-	opts.SetAutoReconnect(true)
+	opts.SetAutoReconnect(false)
 	opts.SetKeepAlive(2 * time.Second)
+	opts.SetConnectionLostHandler(func(client mqtt.Client, err error) {
+	    for !client.IsConnected() {
+		if token := client.Connect(); token.WaitTimeout(5 * time.Second) && token.Error() != nil {
+		    time.Sleep(2 * time.Second)
+		} else {
+		    token := client.Publish(topic, uint8(qos), retained, "online")
+		    token.Wait()
+		}
+	    }
+	})
 
 	// Set Last Will and Testament (LWT)
 	opts.SetWill(topic, "offline", uint8(qos), retained)
