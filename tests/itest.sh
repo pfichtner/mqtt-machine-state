@@ -1,5 +1,7 @@
 #!/bin/bash
 
+BINARY_PATH="../$1"
+
 # Function to generate a random free port
 get_random_free_port() {
     local port
@@ -20,7 +22,7 @@ start_mqtt_broker() {
 # Function to start the binary with the given broker port and return its PID
 start_binary() {
     local broker_port=$1
-    ../binaries/mqttmachinestate-linux-amd64 -p $broker_port >/dev/null 2>&1 &
+    "$BINARY_PATH" -p $broker_port >/dev/null 2>&1 &
     echo $!
 }
 
