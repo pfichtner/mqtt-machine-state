@@ -36,12 +36,13 @@ check_message() {
     local timeout=$3
     
     # Wait for the specified timeout to check if the message is received
-    timeout $timeout tail -F "$mqtt_output_file" | grep -q "$expected_message" && echo "SUCCESS: Received message: $expected_message" || (echo "FAILURE: Expected $expected_message, but received none" && exit 1)
-}
-
-clear_message() {
-    local mqtt_output_file=$1
-    echo '' >"$mqtt_output_file"
+    if timeout "$timeout" tail -F "$mqtt_output_file" | grep -q "$expected_message"; then
+        echo "SUCCESS: Received message: $expected_message"
+        # Clear the output file
+        echo '' > "$mqtt_output_file"
+    else
+        echo "FAILURE: Expected $expected_message, but received none" && exit 1
+    fi
 }
 
 # Function to start the binary with the given broker port and return its PID
@@ -84,21 +85,17 @@ binary_pid=$(start_binary $MOSQUITTO_VIA_TOXIPROXY_PORT)
 
 # Wait for the "online" message
 check_message "online" "$mqtt_output_file" 10  # Adjust the timeout as needed
-clear_message "$mqtt_output_file"
 
 # ADD toxic
 docker exec $TOXIPROXY_CONTAINER_NAME /toxiproxy-cli toxic add -t timeout -n timeout_downstream -a timeout=1 mqtt-broker
 check_message "offline" "$mqtt_output_file" 30  # Adjust the timeout as needed
-clear_message "$mqtt_output_file"
 
 # REMOVE toxic
 docker exec $TOXIPROXY_CONTAINER_NAME /toxiproxy-cli toxic remove -n timeout_downstream mqtt-broker
 check_message "online" "$mqtt_output_file" 20  # Adjust the timeout as needed
-clear_message "$mqtt_output_file"
 
 # Kill the binary and wait for the "offline" message
 kill $binary_pid
 check_message "offline" "$mqtt_output_file" 10  # Adjust the timeout as needed
-clear_message "$mqtt_output_file"
 
 
