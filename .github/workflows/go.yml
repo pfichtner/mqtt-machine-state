@@ -34,7 +34,7 @@ jobs:
          cache-dependency-path: subdir/go.sum
      - name: Build
        run: |
-          go build -ldflags="-s -w" -v -o binaries/mqttmachinestate-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.os == 'windows' && '.exe' || '' }} ./...
+          go build -ldflags="-s -w" -v -o binaries/mqttmachinestate${{ matrix.os == 'windows' && '.exe' || '' }} ./...
        env:
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
@@ -60,7 +60,7 @@ jobs:
          for script in *.sh; do
            if [ -f "$script" ] && [ -x "$script" ]; then
              echo "Running $script..."
-             ./"$script" binaries/mqttmachinestate-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.os == 'windows' && '.exe' || '' }}
+             ./"$script" binaries/mqttmachinestate${{ matrix.os == 'windows' && '.exe' || '' }}
            else
              echo "Skipping non-executable or non-existent file: $script"
            fi
