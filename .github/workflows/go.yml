@@ -71,7 +71,7 @@ jobs:
            fi
          done
        # using qemu we could run arm binaries on linux as well
-       if: matrix.os == 'linux' && (matrix.arch == 'amd64' || matrix.arch == '386')
+       if: (matrix.os == 'linux' || matrix.os == 'darwin') && (matrix.arch == 'amd64' || matrix.arch == '386')
 
      - name: Compress and move files
        run: |
