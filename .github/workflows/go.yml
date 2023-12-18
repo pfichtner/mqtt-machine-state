@@ -63,7 +63,8 @@ jobs:
        if: matrix.os == 'darwin'
        # if: runner.os == 'macos'
        run: |
-         brew install docker docker-compose
+         # coreutils contains the timeout command used in one of the test scripts
+         brew install docker docker-compose coreutils
          
          # Link the Docker Compose v2 plugin so it's understood by the docker CLI
          mkdir -p ~/.docker/cli-plugins
