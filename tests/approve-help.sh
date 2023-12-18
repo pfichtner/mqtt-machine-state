@@ -4,14 +4,13 @@ set -x
 # Set the path to the binary
 BINARY_NAME="$1"
 BINARY_PATH=$(realpath "../$BINARY_NAME")
-REAL_BINARY_PATH=$BINARY_PATH
 
 # Check if the script is running on Windows
 if [ "$(expr substr $(uname -s) 1 5)" == "MINGW" ]; then
   REAL_BINARY_PATH=$(which "../$BINARY_NAME")
-  SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-  REAL_BINARY_PATH="$SCRIPT_DIR/binaries/mqttmachinestate.exe"
-  REAL_BINARY_PATH=$(cmd.exe /c echo %cd%\\$BINARY_PATH | tail -n 1)
+  REAL_BINARY_PATH=$(cmd.exe /c echo %cd%\\$REAL_BINARY_PATH | tail -n 1)
+else
+  REAL_BINARY_PATH="$BINARY_PATH"
 fi
 
 # Set the path to the approved output file
