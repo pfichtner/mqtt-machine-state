@@ -86,13 +86,20 @@ jobs:
 
       - name: Display structure of downloaded files
         run: ls -R
+
+     - name: Compress and move files
+       run: |
+         mkdir -p publish-artifacts
+         for dir in binaries-*; do
+           tar -czf "publish-artifacts/mqttmachinestate-$(basename "$dir").tar.gz" -C "$dir" *
+         done
   
       - name: Create Release
         id: create_release
         uses: ncipollo/release-action@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          artifacts: "binaries-*/*"
+          artifacts: "publish-artifacts/*"
           makeLatest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
