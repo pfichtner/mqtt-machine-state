@@ -25,7 +25,7 @@ SCRUB_HOSTNAME_PLACEHOLDER="\$\$\$SCRUBBED_HOSTNAME\$\$\$"
 SCRUB_BINARY_PATH_PLACEHOLDER="\$\$\$SCRUBBED_BINARY_PATH\$\$\$"
 
 # Run the binary with the "--help" argument and capture both stdout and stderr
-REAL_BINARY_PATH=$(echo "$REAL_BINARY_PATH" | sed 's|\\|\\\\|g')
+#REAL_BINARY_PATH=$(echo "$REAL_BINARY_PATH" | sed 's|\\|\\\\|g')
 { "$BINARY_PATH" --help 2>&1 | sed -e "s|$(hostname)|$SCRUB_HOSTNAME_PLACEHOLDER|g" -e "s|$REAL_BINARY_PATH|$SCRUB_BINARY_PATH_PLACEHOLDER|g"; } > "$ACTUAL_OUTPUT_FILE"
 
 # Compare the current output with the approved output
