@@ -7,6 +7,9 @@ BINARY_NAME="$1"
 # Check if the script is running on Windows
 if [ "$(expr substr $(uname -s) 1 5)" == "MINGW" ]; then
   BINARY_PATH=$(which "../$BINARY_NAME")
+  SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+  BINARY_PATH="$SCRIPT_DIR/binaries/mqttmachinestate.exe"
+  BINARY_PATH=$(cmd.exe /c echo %cd%\\$BINARY_PATH)
 else
   BINARY_PATH=$(realpath "../$BINARY_NAME")
 fi
