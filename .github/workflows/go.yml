@@ -65,12 +65,10 @@ jobs:
        run: |
          # coreutils contains the timeout command used in one of the test scripts
          brew install docker docker-compose coreutils
-         
          # Link the Docker Compose v2 plugin so it's understood by the docker CLI
          mkdir -p ~/.docker/cli-plugins
          ln -sfn /usr/local/opt/docker-compose/bin/docker-compose ~/.docker/cli-plugins/docker-compose
-    
-    colima start
+         colima start
 
      - name: Run tests
        run: |
