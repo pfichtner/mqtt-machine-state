@@ -59,10 +59,18 @@ jobs:
        # if: matrix.os != 'windows' || (matrix.os == 'windows' && matrix.arch != 'amd64' && matrix.arch != 'arm64')
        if: matrix.os != 'windows' || matrix.arch != 'arm64'
 
-     - name: Install docker-compose (macOS)
-       run: |
-         brew install docker-compose
+     - name: Setup docker and docker-compose (missing on MacOS)
        if: matrix.os == 'darwin'
+       # if: runner.os == 'macos'
+       run: |
+         brew install docker docker-compose
+         
+         # Link the Docker Compose v2 plugin so it's understood by the docker CLI
+         mkdir -p ~/.docker/cli-plugins
+         ln -sfn /usr/local/opt/docker-compose/bin/docker-compose ~/.docker/cli-plugins/docker-compose
+    
+    colima start
+
      - name: Run tests
        run: |
          cd tests
