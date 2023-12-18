@@ -24,14 +24,14 @@ fi
 { "$BINARY_PATH" --help 2>&1 | sed "s/$(hostname)/$SCRUB_PLACEHOLDER/g"; } > "$ACTUAL_OUTPUT_FILE"
 
 # Compare the current output with the approved output
-if cmp -s "$ACTUAL_OUTPUT_FILE" "$APPROVED_OUTPUT_FILE"; then
+if diff -w "$APPROVED_OUTPUT_FILE" "$ACTUAL_OUTPUT_FILE" > /dev/null; then
   echo "Output matches the approved version."
   # Remove the actual output file if it matches the approved version
   rm "$ACTUAL_OUTPUT_FILE"
   exit 0
 else
   echo "Error: Output has changed. Diff between actual and approved output:"
-  diff "$APPROVED_OUTPUT_FILE" "$ACTUAL_OUTPUT_FILE"
+  diff -w "$APPROVED_OUTPUT_FILE" "$ACTUAL_OUTPUT_FILE"
   echo "Actual output saved to $ACTUAL_OUTPUT_FILE. Run the script with --approve option to update the approved output."
   exit 1
 fi
