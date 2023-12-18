@@ -2,7 +2,7 @@
 
 # Set the path to the binary
 BINARY_NAME="$1"
-BINARY_PATH=$(readlink -f "../$BINARY_NAME")
+BINARY_PATH=$(realpath "../$BINARY_NAME")
 
 # Set the path to the approved output file
 APPROVED_OUTPUT_FILE="approved_output.txt"
