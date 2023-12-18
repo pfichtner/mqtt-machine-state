@@ -91,7 +91,7 @@ jobs:
         run: |
           mkdir -p publish-artifacts
           for dir in binaries-*; do
-            find "$dir" -type f -exec tar -czf "publish-artifacts/mqttmachinestate-$(basename "$dir").tar.gz" -C "$dir" {} +
+            tar -czf "publish-artifacts/mqttmachinestate-$(basename "$dir").tar.gz" -C "$dir" .
           done
   
       - name: Create Release
