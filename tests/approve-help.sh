@@ -7,8 +7,8 @@ BINARY_PATH=$(realpath "../$BINARY_NAME")
 
 # Check if the script is running on Windows
 if [ "$(expr substr $(uname -s) 1 5)" == "MINGW" ]; then
-  REAL_BINARY_PATH=$(which "../$BINARY_NAME")
-  REAL_BINARY_PATH=$(cmd.exe /c echo %cd%\\$REAL_BINARY_PATH | tail -n 1)
+  # REAL_BINARY_PATH=$(which "../$BINARY_NAME")
+  REAL_BINARY_PATH=$(echo "$BINARY_PATH" | sed 's,^/\(.\),\U\1:,;s/\//\\/g')
 else
   REAL_BINARY_PATH="$BINARY_PATH"
 fi
