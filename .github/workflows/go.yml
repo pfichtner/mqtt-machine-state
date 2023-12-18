@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os == 'darwin' && 'macos-latest' || 'ubuntu-latest'}}
+    runs-on: ${{ matrix.os == 'darwin' && 'macos-latest' || matrix.os == 'linux' && 'ubuntu-latest' || matrix.os == 'windows' && 'windows-latest' }}
 
     strategy:
       matrix:
@@ -44,15 +44,16 @@ jobs:
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
 
-     - name: Install UPX (linux)
+     - name: Install UPX
        run: |
-         sudo apt-get update
-         sudo apt-get install -y upx
-       if: matrix.os == 'linux'
-     - name: Install UPX (macOS)
-       run: |
-         brew install upx
-       if: matrix.os == 'darwin'
+         if [[ "${{ matrix.os }}" == 'darwin' ]]; then
+           brew install upx
+         elif [[ "${{ matrix.os }}" == 'linux' ]]; then
+           sudo apt-get update && sudo apt-get install -y upx
+         elif [[ "${{ matrix.os }}" == 'windows' ]]; then
+           choco install upx -y
+         fi
+
      - name: Pack/compress binary
        run: |
           upx binaries/*
