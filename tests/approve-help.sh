@@ -3,15 +3,15 @@ set -x
 
 # Set the path to the binary
 BINARY_NAME="$1"
+BINARY_PATH=$(realpath "../$BINARY_NAME")
+REAL_BINARY_PATH=$BINARY_PATH
 
 # Check if the script is running on Windows
 if [ "$(expr substr $(uname -s) 1 5)" == "MINGW" ]; then
-  BINARY_PATH=$(which "../$BINARY_NAME")
+  REAL_BINARY_PATH=$(which "../$BINARY_NAME")
   SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-  BINARY_PATH="$SCRIPT_DIR/binaries/mqttmachinestate.exe"
-  BINARY_PATH=$(cmd.exe /c echo %cd%\\$BINARY_PATH | tail -n 1)
-else
-  BINARY_PATH=$(realpath "../$BINARY_NAME")
+  REAL_BINARY_PATH="$SCRIPT_DIR/binaries/mqttmachinestate.exe"
+  REAL_BINARY_PATH=$(cmd.exe /c echo %cd%\\$BINARY_PATH | tail -n 1)
 fi
 
 # Set the path to the approved output file
@@ -25,8 +25,8 @@ SCRUB_HOSTNAME_PLACEHOLDER="\$\$\$SCRUBBED_HOSTNAME\$\$\$"
 SCRUB_BINARY_PATH_PLACEHOLDER="\$\$\$SCRUBBED_BINARY_PATH\$\$\$"
 
 # Run the binary with the "--help" argument and capture both stdout and stderr
-#BINARY_PATH=$(echo "$BINARY_PATH" | sed 's|\\|\\\\|g')
-{ "$BINARY_PATH" --help 2>&1 | sed -e "s|$(hostname)|$SCRUB_HOSTNAME_PLACEHOLDER|g" -e "s|$BINARY_PATH|$SCRUB_BINARY_PATH_PLACEHOLDER|g"; } > "$ACTUAL_OUTPUT_FILE"
+REAL_BINARY_PATH=$(echo "$REAL_BINARY_PATH" | sed 's|\\|\\\\|g')
+{ "$BINARY_PATH" --help 2>&1 | sed -e "s|$(hostname)|$SCRUB_HOSTNAME_PLACEHOLDER|g" -e "s|$REAL_BINARY_PATH|$SCRUB_BINARY_PATH_PLACEHOLDER|g"; } > "$ACTUAL_OUTPUT_FILE"
 
 # Compare the current output with the approved output
 if diff -w "$APPROVED_OUTPUT_FILE" "$ACTUAL_OUTPUT_FILE" > /dev/null; then
