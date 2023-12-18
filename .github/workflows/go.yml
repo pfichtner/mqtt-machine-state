@@ -45,6 +45,7 @@ jobs:
           GOARCH: ${{ matrix.arch }}
 
      - name: Install UPX
+       shell: bash
        run: |
          if [[ "${{ matrix.os }}" == 'darwin' ]]; then
            brew install upx
