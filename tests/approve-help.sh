@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 
 # Set the path to the binary
 BINARY_NAME="$1"
