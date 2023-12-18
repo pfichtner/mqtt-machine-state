@@ -2,7 +2,7 @@
 
 # Set the path to the binary
 BINARY_NAME="$1"
-BINARY_PATH="../$BINARY_NAME"
+BINARY_PATH=$(readlink -f "../$BINARY_NAME")
 
 # Set the path to the approved output file
 APPROVED_OUTPUT_FILE="approved_output.txt"
@@ -10,25 +10,12 @@ APPROVED_OUTPUT_FILE="approved_output.txt"
 # Set the path to the actual output file
 ACTUAL_OUTPUT_FILE="actual_output.txt"
 
-# Scrub placeholders for hostname and binary name
+# Scrub placeholders for hostname, binary name, and binary path
 SCRUB_HOSTNAME_PLACEHOLDER="\$\$\$SCRUBBED_HOSTNAME\$\$\$"
-SCRUB_BINARY_NAME_PLACEHOLDER="\$\$\$SCRUBBED_BINARY_NAME\$\$\$"
-
-# Check if the script is invoked with the "--approve" option
-if [ "$BINARY_NAME" = "--approve" ]; then
-  echo "Error: Missing binary name. Usage: $0 <binary_name>"
-  exit 1
-fi
-
-if [ "$2" = "--approve" ]; then
-  # Run the binary with the "--help" argument, replace the hostname and binary name, and save both stdout and stderr to the approved file
-  { "$BINARY_PATH" --help 2>&1 | sed -e "s|$(hostname)|$SCRUB_HOSTNAME_PLACEHOLDER|g" -e "s|$BINARY_NAME|$SCRUB_BINARY_NAME_PLACEHOLDER|g"; } > "$APPROVED_OUTPUT_FILE"
-  echo "Approved output updated."
-  exit 0
-fi
+SCRUB_BINARY_PATH_PLACEHOLDER="\$\$\$SCRUBBED_BINARY_PATH\$\$\$"
 
 # Run the binary with the "--help" argument and capture both stdout and stderr
-{ "$BINARY_PATH" --help 2>&1 | sed -e "s|$(hostname)|$SCRUB_HOSTNAME_PLACEHOLDER|g" -e "s|$BINARY_NAME|$SCRUB_BINARY_NAME_PLACEHOLDER|g"; } > "$ACTUAL_OUTPUT_FILE"
+{ "$BINARY_PATH" --help 2>&1 | sed -e "s|$(hostname)|$SCRUB_HOSTNAME_PLACEHOLDER|g" -e "s|$BINARY_PATH|$SCRUB_BINARY_PATH_PLACEHOLDER|g"; } > "$ACTUAL_OUTPUT_FILE"
 
 # Compare the current output with the approved output
 if diff -w "$APPROVED_OUTPUT_FILE" "$ACTUAL_OUTPUT_FILE" > /dev/null; then
