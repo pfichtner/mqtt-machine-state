@@ -3,7 +3,13 @@ set -x
 
 # Set the path to the binary
 BINARY_NAME="$1"
-BINARY_PATH=$(realpath "../$BINARY_NAME")
+
+# Check if the script is running on Windows
+if [ "$(expr substr $(uname -s) 1 5)" == "MINGW" ]; then
+  BINARY_PATH=$(which "../$BINARY_NAME")
+else
+  BINARY_PATH=$(realpath "../$BINARY_NAME")
+fi
 
 # Set the path to the approved output file
 APPROVED_OUTPUT_FILE="approved_output.txt"
