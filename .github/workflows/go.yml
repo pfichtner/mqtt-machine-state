@@ -26,9 +26,14 @@ jobs:
             arch: arm
 
     steps:
-     - uses: actions/checkout@v4
+     - name: Harden Runner
+       uses: step-security/harden-runner@eb238b55efaa70779f274895e782ed17c84f2895 # v2.6.1
+       with:
+         egress-policy: audit
+
+     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
      - name: Setup Go
-       uses: actions/setup-go@v5
+       uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
        with:
          go-version: '1.20'
          cache-dependency-path: subdir/go.sum
@@ -81,8 +86,13 @@ jobs:
     needs: build
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@eb238b55efaa70779f274895e782ed17c84f2895 # v2.6.1
+        with:
+          egress-policy: audit
+
       - name: Download Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@7a1cd3216ca9260cd8022db641d960b1db4d1be4 # v4.0.0
 
       - name: Display structure of downloaded files
         run: ls -R
@@ -96,7 +106,7 @@ jobs:
   
       - name: Create Release
         id: create_release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@6c75be85e571768fa31b40abf38de58ba0397db5 # v1.13.0
         if: startsWith(github.ref, 'refs/tags/')
         with:
           artifacts: "publish-artifacts/*"
