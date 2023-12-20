@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Global variable for MQTT output file
+MQTT_OUTPUT_FILE=""
+
 # Function to get the host port for a service
 get_host_port() {
   local service=$1
@@ -19,28 +22,35 @@ create_toxiproxy_listen_upstream() {
   docker exec "$container_name" /toxiproxy-cli create --listen 0.0.0.0:"$listen_port" --upstream "$upstream_host":"$upstream_port" "$proxy_name"
 }
 
-# Function to subscribe to a topic in the background and create a temporary file
+# Function to subscribe to all topics, write messages to a temporary file, and perform a test publish
 subscribe_background() {
   local container_name=$1
-  local topic=$2
-  local mqtt_output_file
-  mqtt_output_file=$(mktemp)
-  docker exec "$container_name" mosquitto_sub -h localhost -p 1883 -t "$topic" > "$mqtt_output_file" &
-  echo "$mqtt_output_file"
+  MQTT_OUTPUT_FILE=$(mktemp)
+
+  # Start a loop to publish a test message and check for its reception
+  local test_topic="test"
+  local test_payload="test"
+
+  docker exec "$container_name" mosquitto_sub -h localhost -p 1883 -t '#' -F '%t %p' > "$MQTT_OUTPUT_FILE" &
+  while true; do
+    docker exec "$container_name" mosquitto_pub -h localhost -p 1883 -t "$test_topic" -m "$test_payload"
+    check_message "$test_topic" "$test_payload" 1 && break
+  done
 }
 
-# Function to check if a message is published on a topic
+# Function to check if a message with a specific topic and payload is received
 check_message() {
-  local expected_message=$1
-  local timeout=$2
+  local expected_topic=$1
+  local expected_payload=$2
+  local timeout=$3
 
   # Wait for the specified timeout to check if the message is received
-  if timeout "$timeout" tail -F "$MQTT_OUTPUT_FILE" | grep -q "$expected_message"; then
-    echo "SUCCESS: Received message: $expected_message"
+  if timeout "$timeout" tail -F "$MQTT_OUTPUT_FILE" | grep -q "$expected_topic $expected_payload"; then
+    echo "SUCCESS: Received message on topic '$expected_topic' with payload '$expected_payload'"
     # Clear the output file
     echo '' > "$MQTT_OUTPUT_FILE"
   else
-    echo "FAILURE: Expected $expected_message, but received none" && exit 1
+    echo "FAILURE: Expected message on topic '$expected_topic' with payload '$expected_payload', but received none" && return 1
   fi
 }
 
@@ -59,6 +69,7 @@ cleanup() {
   rm -f "$MQTT_OUTPUT_FILE"
 }
 
+# Function to run the tests
 run_tests() {
   local binary="../$1"
 
@@ -75,27 +86,26 @@ run_tests() {
   create_toxiproxy_listen_upstream $toxiproxy_container_name mqtt-broker 1884 mosquitto 1883
   local mosquitto_via_toxiproxy_port=$(get_host_port toxiproxy 1884)
   
-  # Subscribe to the topic in the background and get the temporary file
-  MQTT_OUTPUT_FILE=$(subscribe_background $mosquitto_container_name "$(hostname)/status")
-  sleep 3
+  # Subscribe to all topics in the background
+  subscribe_background $mosquitto_container_name
   
   # Start the binary with the broker port and get its PID
   local binary_pid=$(start_binary "$binary" "$mosquitto_via_toxiproxy_port")
   
   # Wait for the "online" message
-  check_message "online" 10  # Adjust the timeout as needed
+  check_message "$(hostname)/status" "online" 10 || exit 1
   
   # ADD toxic
   docker exec "$toxiproxy_container_name" /toxiproxy-cli toxic add -t timeout -n timeout_downstream -a timeout=1 mqtt-broker
-  check_message "offline" 30  # Adjust the timeout as needed
+  check_message "$(hostname)/status" "offline" 30 || exit 1
   
   # REMOVE toxic
   docker exec "$toxiproxy_container_name" /toxiproxy-cli toxic remove -n timeout_downstream mqtt-broker
-  check_message "online" 20  # Adjust the timeout as needed
+  check_message "$(hostname)/status" "online" 20 || exit 1
   
   # Kill the binary and wait for the "offline" message
   kill "$binary_pid"
-  check_message "offline" 10  # Adjust the timeout as needed
+  check_message "$(hostname)/status" "offline" 10 || exit 1
 } 
 
 binary="../$1"
