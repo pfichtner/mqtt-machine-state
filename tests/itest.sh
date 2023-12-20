@@ -45,21 +45,25 @@ check_message() {
   local timeout=$3
 
   # Wait for the specified timeout to check if the message is received
-  if timeout "$timeout" tail -F "$MQTT_OUTPUT_FILE" | grep -q "$expected_topic $expected_payload"; then
+  timeout "$timeout" tail -F "$MQTT_OUTPUT_FILE" | grep -q "$expected_topic $expected_payload"
+}
+
+# Function to assert a message and provide details on failure
+assert_message() {
+  local expected_topic=$1
+  local expected_payload=$2
+  local timeout=$3
+
+  if check_message "$expected_topic" "$expected_payload" "$timeout"; then
     echo "SUCCESS: Received message on topic '$expected_topic' with payload '$expected_payload'"
     # Clear the output file
     echo '' > "$MQTT_OUTPUT_FILE"
   else
-    echo "FAILURE: Expected message on topic '$expected_topic' with payload '$expected_payload', but received none" && return 1
+    echo "FAILURE: Expected message on topic '$expected_topic' with payload '$expected_payload', but received none"
+    echo "Contents of $MQTT_OUTPUT_FILE:"
+    cat "$MQTT_OUTPUT_FILE"  
+    exit 1
   fi
-}
-
-# Function to start the binary with the given broker port and return its PID
-start_binary() {
-  local binary=$1
-  local broker_port=$2
-  "$binary" -p "$broker_port" >/dev/null 2>&1 &
-  echo $!
 }
 
 # Function to stop and remove the MQTT broker container
@@ -90,22 +94,24 @@ run_tests() {
   subscribe_background $mosquitto_container_name
   
   # Start the binary with the broker port and get its PID
-  local binary_pid=$(start_binary "$binary" "$mosquitto_via_toxiproxy_port")
+  "$binary" -p "$mosquitto_via_toxiproxy_port" >/dev/null 2>&1 &
+  local binary_pid=$!
   
   # Wait for the "online" message
-  check_message "$(hostname)/status" "online" 10 || exit 1
+  assert_message "$(hostname)/status" "online" 10
   
   # ADD toxic
   docker exec "$toxiproxy_container_name" /toxiproxy-cli toxic add -t timeout -n timeout_downstream -a timeout=1 mqtt-broker
-  check_message "$(hostname)/status" "offline" 30 || exit 1
+  assert_message "$(hostname)/status" "offline" 30
   
   # REMOVE toxic
   docker exec "$toxiproxy_container_name" /toxiproxy-cli toxic remove -n timeout_downstream mqtt-broker
-  check_message "$(hostname)/status" "online" 20 || exit 1
+  assert_message "$(hostname)/status" "online" 20
   
   # Kill the binary and wait for the "offline" message
+  echo "Stopping (killing) $binary with PID $binary_pid"
   kill "$binary_pid"
-  check_message "$(hostname)/status" "offline" 10 || exit 1
+  assert_message "$(hostname)/status" "offline" 10
 } 
 
 binary="../$1"
