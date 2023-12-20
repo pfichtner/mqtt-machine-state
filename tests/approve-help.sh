@@ -6,7 +6,7 @@ BINARY_PATH=$(realpath "../$BINARY_NAME")
 REAL_BINARY_PATH="$BINARY_PATH"
 
 # Check if the script is running on Windows
-[ "$(expr substr $(uname -s) 1 5)" == "MINGW" ] && REAL_BINARY_PATH=$(echo "$REAL_BINARY_PATH" | sed 's,^/\(.\),\U\1:,;s/\//\\/g')
+[[ "$(uname -s)" == MINGW* ]] && REAL_BINARY_PATH=$(echo "$REAL_BINARY_PATH" | sed 's,^/\(.\),\U\1:,;s/\//\\/g')
 
 # Set the path to the approved output file
 APPROVED_OUTPUT_FILE="approved_output.txt"
