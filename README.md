@@ -1,3 +1,5 @@
+[![Go](https://github.com/pfichtner/mqtt-machine-state/actions/workflows/go.yml/badge.svg)](https://github.com/pfichtner/mqtt-machine-state/actions/workflows/go.yml)
+
 # mqtt-machine-state
 
 Send messages to mqtt broker on machine startups/shutdowns
