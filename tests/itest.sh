@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eu
+
 # Global variable for MQTT output file
 MQTT_OUTPUT_FILE=""
 
@@ -7,7 +9,7 @@ MQTT_OUTPUT_FILE=""
 get_host_port() {
   local service=$1
   local port=$2
-  port=$(docker-compose port "$service" "$port" | cut -d: -f2)
+  port=$(docker compose port "$service" "$port" | cut -d: -f2)
   echo "$port"
 }
 
@@ -67,7 +69,7 @@ assert_message() {
 # Function to stop and remove the MQTT broker container
 cleanup() {
   # Stop and remove the containers
-  docker-compose down
+  docker compose down
   rm -f "$MQTT_OUTPUT_FILE"
 }
 
@@ -76,13 +78,13 @@ run_tests() {
   local binary="../$1"
 
   # Start the services
-  docker-compose up -d
+  docker compose up -d
   
   # Set up trap to ensure cleanup on script termination or interruption
   trap cleanup EXIT
   
-  local toxiproxy_container_name=$(docker-compose ps -q toxiproxy)
-  local mosquitto_container_name=$(docker-compose ps -q mosquitto)
+  local toxiproxy_container_name=$(docker compose ps -q toxiproxy)
+  local mosquitto_container_name=$(docker compose ps -q mosquitto)
   
   # Create Toxiproxy listen/upstream pair for MQTT broker
   create_toxiproxy_listen_upstream $toxiproxy_container_name mqtt-broker 1884 mosquitto 1883
