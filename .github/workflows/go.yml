@@ -71,11 +71,6 @@ jobs:
          ln -sfn /usr/local/opt/docker-compose/bin/docker-compose ~/.docker/cli-plugins/docker-compose
          colima start
 
-     - name: Setup docker-compose (missing on newer ubuntu-runners)
-       if: matrix.os == 'linux'
-       run: |
-         sudo apt-get update && sudo apt-get install -y docker-compose
-
      - name: Run tests
        # bash is default on linux and mac but not windows
        shell: bash
