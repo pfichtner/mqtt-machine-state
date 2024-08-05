@@ -45,7 +45,7 @@ check_message() {
   local timeout=$3
 
   # Wait for the specified timeout to check if the message is received
-  timeout "$timeout" tail -F "$MQTT_OUTPUT_FILE" | grep -q "$expected_topic $expected_payload"
+  timeout "$timeout" tail -F "$MQTT_OUTPUT_FILE" | grep -q "$expected_topic $expected_payload" && echo '' > "$MQTT_OUTPUT_FILE"
 }
 
 # Function to assert a message and provide details on failure
@@ -56,10 +56,8 @@ assert_message() {
 
   if check_message "$expected_topic" "$expected_payload" "$timeout"; then
     echo "SUCCESS: Received message on topic '$expected_topic' with payload '$expected_payload'"
-    # Clear the output file
-    echo '' > "$MQTT_OUTPUT_FILE"
   else
-    echo "FAILURE: Expected message on topic '$expected_topic' with payload '$expected_payload', but received none"
+    echo "FAILURE: Expected message on topic '$expected_topic' with payload '$expected_payload'"
     echo "Contents of $MQTT_OUTPUT_FILE:"
     cat "$MQTT_OUTPUT_FILE"  
     exit 1
@@ -110,7 +108,7 @@ run_tests() {
   
   # Kill the binary and wait for the "offline" message
   echo "Stopping (killing) $binary with PID $binary_pid"
-  kill "$binary_pid"
+  kill "$binary_pid" >/dev/null 2>&1
   assert_message "$(hostname)/status" "offline" 10
 } 
 
