@@ -152,27 +152,14 @@ check_docker() {
     fi
 }
 
-detect_architecture() {
-    if [[ "$(uname -m)" == "x86_64" ]]; then
-        echo "amd64 architecture detected."
-        PLATFORM="linux/amd64"
-    elif [[ "$(uname -m)" == "i386" || "$(uname -m)" == "i686" ]]; then
-        echo "i386 architecture detected."
-        PLATFORM="linux/i386"
-    else
-        echo "Unknown architecture detected."
-        PLATFORM="unknown"
-        return 1
-    fi
-}
-
 # skip if docker is not available
 check_docker || exit 0
-detect_architecture || exit 0
 
-echo "Pulling Docker images for platform $PLATFORM..."
-docker pull --platform $PLATFORM toxiproxy
-docker pull --platform $PLATFORM eclipse-mosquitto
+if [[ "$OSTYPE" != "linux-gnu"* && "$OSTYPE" != "darwin"* ]]; then
+    # Assuming we're on Windows -> pull linux images
+    docker pull --platform linux/amd64 toxiproxy
+    docker pull --platform linux/amd64 eclipse-mosquitto
+fi
 
 binary="../$1"
 run_tests "$1"
