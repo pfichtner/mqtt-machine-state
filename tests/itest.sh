@@ -73,22 +73,20 @@ cleanup() {
   rm -f "$MQTT_OUTPUT_FILE"
 }
 
-# Function to wait for services to be healthy
-wait_for_health() {
-  local service=$1
-  local retries=10
+# Function to wait for all services to be healthy
+wait_for_all_services_healthy() {
+  local retries=60
   local count=0
   while [ $count -lt $retries ]; do
-    local status=$(docker inspect --format='{{.State.Health.Status}}' "$service")
-    if [ "$status" == "healthy" ]; then
-      return 0
-    fi
-    echo "Waiting for $service to be healthy..."
+    local unhealthy_services=$(docker compose ps --filter "status=unhealthy" --services)
+    [ -z "$unhealthy_services" ] && return 0
+    echo "Waiting for all services to be healthy..."
     sleep 1
     count=$((count + 1))
   done
-  echo "Service $service failed to reach healthy state"
-  exit 1
+  echo "Some services failed to reach a healthy state"
+  docker compose ps
+  return 1
 }
 
 # Function to run the tests
@@ -100,14 +98,13 @@ run_tests() {
 
   # Set up trap to ensure cleanup on script termination or interruption
   trap cleanup EXIT
-  
+
+  # Wait for all services to be healthy
+  wait_for_all_services_healthy
+
   local toxiproxy_container_name=$(docker compose ps -q toxiproxy)
   local mosquitto_container_name=$(docker compose ps -q mosquitto)
-  
-  # Wait for services to be healthy
-  wait_for_health $toxiproxy_container_name
-  wait_for_health $mosquitto_container_name
-  
+
   # Create Toxiproxy listen/upstream pair for MQTT broker
   create_toxiproxy_listen_upstream $toxiproxy_container_name mqtt-broker 1884 mosquitto 1883
   local mosquitto_via_toxiproxy_port=$(get_host_port toxiproxy 1884)
