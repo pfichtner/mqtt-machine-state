@@ -1,7 +1,6 @@
 services:
   mosquitto:
     image: eclipse-mosquitto
-    platform: linux/amd64
     ports:
       - "1883"
     volumes:
@@ -16,7 +15,6 @@ services:
 
   toxiproxy:
     image: ghcr.io/shopify/toxiproxy
-    platform: linux/amd64
     ports:
       - "8474" # API port
       - "1884" # port that forwards to eclipse-mosquitto:1883
