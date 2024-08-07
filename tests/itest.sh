@@ -159,6 +159,9 @@ if [[ "$OSTYPE" != "linux-gnu"* && "$OSTYPE" != "darwin"* ]]; then
     # Assuming we're on Windows -> pull linux images
     docker pull --platform linux/amd64 toxiproxy
     docker pull --platform linux/amd64 eclipse-mosquitto
+elif [[ "$(uname -m)" == "i386" || "$(uname -m)" == "i686" ]]; then
+    # dont know why but when running on linux-gnu-i386 we can't connect to mosquitto (docker exec 3c38e1c4cb47f5620e5ebf61da6b4ede1667e04b3b4b67b2c5bd6d0c6709a2a4 mosquitto_sub -h localhost -p 1883 -t '#' -F '%t %p' -> Error: Connection refused)
+    exit 0
 fi
 
 binary="../$1"
