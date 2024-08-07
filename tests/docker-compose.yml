@@ -7,6 +7,11 @@ services:
       - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
     networks:
       - itest-network
+    healthcheck:
+      test: ["CMD", "mosquitto_pub", "-h", "localhost", "-t", "health/check", "-m", "test"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
 
   toxiproxy:
     image: ghcr.io/shopify/toxiproxy
@@ -15,6 +20,11 @@ services:
       - "1884" # port that forwards to eclipse-mosquitto:1883
     networks:
       - itest-network
+    healthcheck:
+      test: ["CMD", "/toxiproxy-cli", "list"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
 
 networks:
   itest-network:
