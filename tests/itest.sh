@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eu
+set -eux
 
 # Global variable for MQTT output file
 MQTT_OUTPUT_FILE=""
