@@ -172,9 +172,8 @@ check_docker() {
 check_docker || exit 0
 
 if [[ "$OSTYPE" != "linux-gnu"* && "$OSTYPE" != "darwin"* ]]; then
-    # Assuming we're on Windows -> pull linux images
-    docker pull --platform linux/amd64 toxiproxy
-    docker pull --platform linux/amd64 eclipse-mosquitto
+  # docker is available on windows but the test fails
+  #exit 0
 fi
 
 binary="../$1"
