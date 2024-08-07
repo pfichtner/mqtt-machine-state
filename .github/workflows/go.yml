@@ -61,6 +61,12 @@ jobs:
        # if: matrix.os != 'windows' || (matrix.os == 'windows' && matrix.arch != 'amd64' && matrix.arch != 'arm64')
        if: matrix.os != 'windows' || matrix.arch != 'arm64'
 
+    - name: Ensure Docker is using Linux containers
+      run: |
+        echo "Switching to Linux containers"
+        PowerShell -Command 'Start-Process "C:\Program Files\Docker\Docker\DockerCli.exe" -ArgumentList " -SwitchLinuxEngine" -NoNewWindow -Wait'
+       if: matrix.os == 'windows'
+
      - name: Run tests
        # bash is default on linux and mac but not windows
        shell: bash
