@@ -131,7 +131,29 @@ run_tests() {
   echo "Stopping (killing) $binary with PID $binary_pid"
   kill "$binary_pid" >/dev/null 2>&1
   assert_message "$(hostname)/status" "offline" 10
-} 
+}
+
+#!/bin/bash
+
+# Function to check if Docker is available
+check_docker() {
+    if docker --version >/dev/null 2>&1; then
+        echo "Docker is installed."
+    else
+        echo "Docker is not installed."
+        return 1
+    fi
+
+    if docker info >/dev/null 2>&1; then
+        echo "Docker is running."
+    else
+        echo "Docker is not running or you do not have the necessary permissions."
+        return 1
+    fi
+}
+
+# skip if docker is not available
+check_docker || exit 0
 
 binary="../$1"
 run_tests "$1"
