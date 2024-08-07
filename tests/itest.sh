@@ -75,17 +75,33 @@ cleanup() {
 
 # Function to wait for all services to be healthy
 wait_for_all_services_healthy() {
-  local retries=60
-  local count=0
-  while [ $count -lt $retries ]; do
-    local unhealthy_services=$(docker compose ps --filter "status=unhealthy" --services)
-    [ -z "$unhealthy_services" ] && return 0
+  count=0
+  while [ $count -lt 10 ]; do
+    # Get the names of services
+    local services=$(docker compose ps --services)
+
+    all_healthy=true
+    for service in $services; do
+      # Check the health status of each service
+      local health_status=$(docker inspect --format '{{json .State.Health.Status}}' $(docker compose ps -q $service))
+
+      if [ "$health_status" != '"healthy"' ]; then
+        all_healthy=false
+        break
+      fi
+    done
+
+    if $all_healthy; then
+      echo "All services are healthy."
+      return 0
+    fi
+
     echo "Waiting for all services to be healthy..."
     sleep 1
     count=$((count + 1))
   done
-  echo "Some services failed to reach a healthy state"
-  docker compose ps
+
+  echo "Not all services became healthy within the retry limit."
   return 1
 }
 
@@ -159,9 +175,6 @@ if [[ "$OSTYPE" != "linux-gnu"* && "$OSTYPE" != "darwin"* ]]; then
     # Assuming we're on Windows -> pull linux images
     docker pull --platform linux/amd64 toxiproxy
     docker pull --platform linux/amd64 eclipse-mosquitto
-elif [[ "$(uname -m)" == "i386" || "$(uname -m)" == "i686" ]]; then
-    # dont know why but when running on linux-gnu-i386 we can't connect to mosquitto (docker exec 3c38e1c4cb47f5620e5ebf61da6b4ede1667e04b3b4b67b2c5bd6d0c6709a2a4 mosquitto_sub -h localhost -p 1883 -t '#' -F '%t %p' -> Error: Connection refused)
-    exit 0
 fi
 
 binary="../$1"
