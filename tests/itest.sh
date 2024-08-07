@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eux
+set -eu
 
 # Global variable for MQTT output file
 MQTT_OUTPUT_FILE=""
@@ -173,7 +173,7 @@ check_docker || exit 0
 
 if [[ "$OSTYPE" != "linux-gnu"* && "$OSTYPE" != "darwin"* ]]; then
   # docker is available on windows but the test fails
-  #exit 0
+  echo "exit 0"
 fi
 
 binary="../$1"
