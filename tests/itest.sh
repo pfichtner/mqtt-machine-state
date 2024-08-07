@@ -75,17 +75,33 @@ cleanup() {
 
 # Function to wait for all services to be healthy
 wait_for_all_services_healthy() {
-  local retries=60
-  local count=0
-  while [ $count -lt $retries ]; do
-    local unhealthy_services=$(docker compose ps --filter "status=unhealthy" --services)
-    [ -z "$unhealthy_services" ] && return 0
+  count=0
+  while [ $count -lt 10 ]; do
+    # Get the names of services
+    local services=$(docker compose ps --services)
+
+    all_healthy=true
+    for service in $services; do
+      # Check the health status of each service
+      local health_status=$(docker inspect --format '{{json .State.Health.Status}}' $(docker compose ps -q $service))
+
+      if [ "$health_status" != '"healthy"' ]; then
+        all_healthy=false
+        break
+      fi
+    done
+
+    if $all_healthy; then
+      echo "All services are healthy."
+      return 0
+    fi
+
     echo "Waiting for all services to be healthy..."
     sleep 1
     count=$((count + 1))
   done
-  echo "Some services failed to reach a healthy state"
-  docker compose ps
+
+  echo "Not all services became healthy within the retry limit."
   return 1
 }
 
@@ -131,7 +147,34 @@ run_tests() {
   echo "Stopping (killing) $binary with PID $binary_pid"
   kill "$binary_pid" >/dev/null 2>&1
   assert_message "$(hostname)/status" "offline" 10
-} 
+}
+
+#!/bin/bash
+
+# Function to check if Docker is available
+check_docker() {
+    if docker --version >/dev/null 2>&1; then
+        echo "Docker is installed."
+    else
+        echo "Docker is not installed."
+        return 1
+    fi
+
+    if docker info >/dev/null 2>&1; then
+        echo "Docker is running."
+    else
+        echo "Docker is not running or you do not have the necessary permissions."
+        return 1
+    fi
+}
+
+# skip if docker is not available
+check_docker || exit 0
+
+if [[ "$OSTYPE" != "linux-gnu"* && "$OSTYPE" != "darwin"* ]]; then
+  # docker is available on windows but the test fails (no matching manifest for windows/amd64 10.0.20348 in the manifest list entries)
+  exit 0
+fi
 
 binary="../$1"
 run_tests "$1"

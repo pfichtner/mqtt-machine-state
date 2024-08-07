@@ -61,16 +61,6 @@ jobs:
        # if: matrix.os != 'windows' || (matrix.os == 'windows' && matrix.arch != 'amd64' && matrix.arch != 'arm64')
        if: matrix.os != 'windows' || matrix.arch != 'arm64'
 
-     - name: Setup docker and docker-compose (missing on MacOS)
-       if: matrix.os == 'darwin---XXX-DISABLED-DUE-TO_FAILURES'
-       run: |
-         # coreutils contains the timeout command used in one of the test scripts
-         brew install colima docker docker-compose coreutils
-         # Link the Docker Compose v2 plugin so it's understood by the docker CLI
-         mkdir -p ~/.docker/cli-plugins
-         ln -sfn /usr/local/opt/docker-compose/bin/docker-compose ~/.docker/cli-plugins/docker-compose
-         colima start
-
      - name: Run tests
        # bash is default on linux and mac but not windows
        shell: bash
@@ -85,7 +75,7 @@ jobs:
            fi
          done
        # using qemu we could run arm binaries on linux as well
-       if: (matrix.os == 'linux' || matrix.os == 'darwin---XXX-DISABLED-DUE-TO_FAILURES') && (matrix.arch == 'amd64' || matrix.arch == '386')
+       if: (matrix.arch == 'amd64' || matrix.arch == '386')
 
      - name: Compress and move files
        run: |
