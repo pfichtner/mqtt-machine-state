@@ -172,8 +172,8 @@ check_docker() {
 check_docker || exit 0
 
 if [[ "$OSTYPE" != "linux-gnu"* && "$OSTYPE" != "darwin"* ]]; then
-  # docker is available on windows but the test fails
-  echo "exit 0"
+  # docker is available on windows but the test fails (no matching manifest for windows/amd64 10.0.20348 in the manifest list entries)
+  exit 0
 fi
 
 binary="../$1"
