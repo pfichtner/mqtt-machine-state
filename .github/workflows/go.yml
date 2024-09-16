@@ -48,7 +48,8 @@ jobs:
        shell: bash
        run: |
          if [[ "${{ matrix.os }}" == 'darwin' ]]; then
-           brew install upx
+           # Error: upx has been disabled because it is crashing for macOS Ventura or above! It was disabled on 2024-09-05.
+           # brew install upx
          elif [[ "${{ matrix.os }}" == 'linux' ]]; then
            sudo apt-get update && sudo apt-get install -y upx
          elif [[ "${{ matrix.os }}" == 'windows' ]]; then
@@ -59,7 +60,7 @@ jobs:
        run: |
           upx binaries/*
        # if: matrix.os != 'windows' || (matrix.os == 'windows' && matrix.arch != 'amd64' && matrix.arch != 'arm64')
-       if: matrix.os != 'windows' || matrix.arch != 'arm64'
+       if: (matrix.os != 'windows' || matrix.arch != 'arm64') && matrix.os != 'darwin')
 
      - name: Run tests
        # bash is default on linux and mac but not windows
