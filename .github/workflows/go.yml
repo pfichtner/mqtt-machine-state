@@ -60,7 +60,7 @@ jobs:
        run: |
           upx binaries/*
        # if: matrix.os != 'windows' || (matrix.os == 'windows' && matrix.arch != 'amd64' && matrix.arch != 'arm64')
-       if: (matrix.os != 'windows' || matrix.arch != 'arm64') && matrix.os != 'darwin')
+       if: (matrix.os != 'windows' || matrix.arch != 'arm64') && matrix.os != 'darwin'
 
      - name: Run tests
        # bash is default on linux and mac but not windows
