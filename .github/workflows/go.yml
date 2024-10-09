@@ -85,7 +85,7 @@ jobs:
          tar -czf "publish-artifacts/mqttmachinestate-$(basename "$dir").tar.gz" -C binaries .
   
      - name: Upload Artifacts
-       uses: actions/upload-artifact@604373da6381bf24206979c74d06a550515601b9 # v4.4.1
+       uses: actions/upload-artifact@84480863f228bb9747b473957fcc9e309aa96097 # v4.4.2
        with:
          name: publish-artifacts-${{ matrix.os }}-${{ matrix.arch }}
          path: "publish-artifacts/*"
