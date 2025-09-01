@@ -5,4 +5,3 @@ Usage of $$$SCRUBBED_BINARY_PATH$$$:
   -t, --topic string    MQTT topic (default "$$$SCRUBBED_HOSTNAME$$$/status")
   -r, --retained        Whether messages should be retained
   -q, --qos int         Quality of Service (QoS) level
-pflag: help requested
