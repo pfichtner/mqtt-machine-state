@@ -40,7 +40,11 @@ func init() {
 
 	// Load configuration from file if provided
 	if configFile != "" {
+		configFile = os.ExpandEnv(configFile)
 		viper.SetConfigFile(configFile)
+		if filepath.Ext(configFile) == ".conf" {
+			viper.SetConfigType("env")
+		}
 		if err := viper.ReadInConfig(); err != nil {
 			fmt.Println("Error reading config file:", err)
 			os.Exit(1)

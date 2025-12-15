@@ -124,25 +124,64 @@ run_tests() {
   # Create Toxiproxy listen/upstream pair for MQTT broker
   create_toxiproxy_listen_upstream $toxiproxy_container_name mqtt-broker 1884 mosquitto 1883
   local mosquitto_via_toxiproxy_port=$(get_host_port toxiproxy 1884)
-  
+
   # Subscribe to all topics in the background
   subscribe_background $mosquitto_container_name
-  
-  # Start the binary with the broker port and get its PID
+
+  ########################################
+  # Test 1: Temporary .conf file
+  ########################################
+  echo "Running test: temporary .conf file"
+
+  # Create a temporary .conf file
+  TEMP_CONF=$(mktemp --suffix=".conf")
+  cat > "$TEMP_CONF" <<EOF
+mqtt:
+  host: "localhost"
+  port: 1883
+topics:
+  status: "test/status"
+EOF
+
+  # Start the binary with the temporary .conf file
+  "$binary" -c "$TEMP_CONF" >/dev/null 2>&1 &
+  local conf_pid=$!
+
+  # Wait a few seconds for the binary to start and publish online
+  sleep 3
+
+  # Check that the binary created expected output (online message)
+  if grep -q "online" "$MQTT_OUTPUT_FILE"; then
+      echo "SUCCESS: Binary read .conf file and published status online"
+  else
+      echo "FAILURE: Binary did not read .conf file correctly"
+      cat "$MQTT_OUTPUT_FILE"
+      kill "$conf_pid" >/dev/null 2>&1
+      rm -f "$TEMP_CONF"
+      exit 1
+  fi
+
+  # Cleanup the temp binary
+  kill "$conf_pid" >/dev/null 2>&1
+  rm -f "$TEMP_CONF"
+
+  ########################################
+  # Test 2: Main binary via Toxiproxy
+  ########################################
   "$binary" -p "$mosquitto_via_toxiproxy_port" >/dev/null 2>&1 &
   local binary_pid=$!
-  
+
   # Wait for the "online" message
   assert_message "$(hostname)/status" "online" 10
-  
+
   # ADD toxic
   docker exec "$toxiproxy_container_name" /toxiproxy-cli toxic add -t timeout -n timeout_downstream -a timeout=1 mqtt-broker
   assert_message "$(hostname)/status" "offline" 30
-  
+
   # REMOVE toxic
   docker exec "$toxiproxy_container_name" /toxiproxy-cli toxic remove -n timeout_downstream mqtt-broker
   assert_message "$(hostname)/status" "online" 20
-  
+
   # Kill the binary and wait for the "offline" message
   echo "Stopping (killing) $binary with PID $binary_pid"
   kill "$binary_pid" >/dev/null 2>&1
