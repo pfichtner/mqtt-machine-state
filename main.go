@@ -27,12 +27,12 @@ func init() {
 		fmt.Println("Error getting hostname:", err)
 		os.Exit(1)
 	}
-	topic := fmt.Sprintf("%s/status", hostname)
+	os.Setenv("hostname", hostname)
 
 	pflag.StringVarP(&configFile, "config", "c", "", "Config file name")
 	pflag.StringVarP(&brokerHost, "broker", "b", "localhost", "MQTT broker host")
 	pflag.IntVarP(&port, "port", "p", 1883, "MQTT broker port")
-	pflag.StringVarP(&topic, "topic", "t", topic, "MQTT topic")
+	pflag.StringVarP(&topic, "topic", "t", "$hostname/status", "MQTT topic")
 	pflag.BoolVarP(&retained, "retained", "r", false, "Whether messages should be retained")
 	pflag.IntVarP(&qos, "qos", "q", 0, "Quality of Service (QoS) level")
 	pflag.CommandLine.SortFlags = false
@@ -64,7 +64,12 @@ func main() {
 	// Use viper.GetString, viper.GetInt, etc., to get configuration values
 	brokerHost = viper.GetString("broker")
 	port = viper.GetInt("port")
-	topic = viper.GetString("topic")
+	rawTopic := viper.GetString("topic")
+	expandedTopic := os.ExpandEnv(rawTopic)
+	if expandedTopic == rawTopic {
+		fmt.Println("Warning: topic contains unexpanded variables:", rawTopic)
+	}
+	topic = expandedTopic
 	retained = viper.GetBool("retained")
 	qos = viper.GetInt("qos")
 
