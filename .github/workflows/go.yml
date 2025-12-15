@@ -12,13 +12,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
 
-      - name: Run tests
-        run: go test ./...
+      - name: Install GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: latest
+          install-only: true
+
+      - name: Build native binary (snapshot)
+        run: goreleaser build --snapshot --single-target --clean
+
+      - name: Run integration tests
+        shell: bash
+        run: |
+          BIN="$(find dist -type f -name mqttmachinestate | head -n1)"
+          echo "Using binary: $BIN"
+
+          cd tests
+          for script in *.sh; do
+            if [ -f "$script" ] && [ -x "$script" ]; then
+              echo "Running $script..."
+              ./"$script" "$BIN"
+            else
+              echo "Skipping $script"
+            fi
+          done
 
   goreleaser:
     runs-on: ubuntu-latest
