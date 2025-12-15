@@ -57,18 +57,7 @@ func main() {
 	// Use viper.GetString, viper.GetInt, etc., to get configuration values
 	brokerHost = viper.GetString("broker")
 	port = viper.GetInt("port")
-	hostname, err := os.Hostname()
-	if err != nil {
-		fmt.Println("Error getting hostname:", err)
-		os.Exit(1)
-	}
-	os.Setenv("hostname", hostname)
-	rawTopic := viper.GetString("topic")
-	expandedTopic := os.ExpandEnv(rawTopic)
-	if expandedTopic == rawTopic {
-		fmt.Println("Warning: topic contains unexpanded variables:", rawTopic)
-	}
-	topic = expandedTopic
+	topic := ExpandTopic(viper.GetString("topic"))
 	retained = viper.GetBool("retained")
 	qos = viper.GetInt("qos")
 
