@@ -34,11 +34,10 @@ builds:
 
 archives:
   - id: binaries
-    format: tar.gz
-    name_template: >
-      {{ .ProjectName }}-{{ .Os }}-{{ .Arch }}
-    files:
-      - none*   # only include the binary
+    formats:
+      - tar.gz
+    name_template: "{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}"
+    wrap_in_directory: false
 
 checksum:
   name_template: checksums.txt
