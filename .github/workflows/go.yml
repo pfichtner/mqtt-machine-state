@@ -82,7 +82,7 @@ jobs:
      - name: Compress and move files
        run: |
          mkdir -p publish-artifacts
-         tar -czf "publish-artifacts/mqttmachinestate-$(basename "$dir").tar.gz" -C binaries .
+         tar -czf "publish-artifacts/mqttmachinestate-${{ matrix.os }}-${{ matrix.arch }}.tar.gz" -C binaries .
   
      - name: Upload Artifacts
        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
