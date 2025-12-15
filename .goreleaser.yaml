@@ -1,0 +1,75 @@
+version: 2
+
+project_name: mqttmachinestate
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: mqttmachinestate
+    binary: mqttmachinestate
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+      - 386
+      - arm
+    goarm:
+      - "7"
+    ignore:
+      - goos: darwin
+        goarch: 386
+      - goos: darwin
+        goarch: arm
+      - goos: windows
+        goarch: 386
+      - goos: windows
+        goarch: arm
+
+archives:
+  - id: binaries
+    format: tar.gz
+    name_template: >
+      {{ .ProjectName }}-{{ .Os }}-{{ .Arch }}
+    files:
+      - none*   # only include the binary
+
+checksum:
+  name_template: checksums.txt
+
+nfpms:
+  - id: packages
+    package_name: mqttmachinestate
+    vendor: "Peter Fichtner"
+    homepage: "https://github.com/pfichtner/mqtt-machine-state"
+    maintainer: "Peter Fichtner <mqttmachine@public-files.de>"
+    description: |
+      MQTT machine state utility
+      Runs mqttmachinestate as a systemd service with a default config file.
+    license: "Apache License 2.0"
+    formats:
+      - deb
+      - rpm
+    dependencies:
+      - systemd
+    contents:
+      - src: packaging/mqttmachinestate.conf
+        dst: /etc/mqttmachinestate.conf
+        type: config
+      - src: packaging/mqtt-machine.service
+        dst: /lib/systemd/system/mqtt-machine.service
+    scripts:
+      postinstall: packaging/postinst.sh
+      preremove: packaging/prerm.sh
+
+release:
+  github:
+    owner: pfichtner
+    name: mqtt-machine-state
+
