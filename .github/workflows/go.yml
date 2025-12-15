@@ -83,9 +83,9 @@ jobs:
        if: matrix.os == 'linux'
        shell: bash
        run: |
-         VERSION="${GITHUB_REF_NAME#refs/tags/}"
+         REF_NAME="${GITHUB_REF_NAME#refs/tags/}"
          ARCH="${{ matrix.arch }}"
-         ./scripts/build-deb.sh "$VERSION" "$ARCH"
+         ./scripts/build-deb.sh "$REF_NAME" "$ARCH"
 
      - name: Compress and move files
        run: |
