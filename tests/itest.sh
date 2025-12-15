@@ -136,34 +136,22 @@ run_tests() {
   # Create a temporary .conf file
   TEMP_CONF=$(mktemp --suffix=".conf")
   cat > "$TEMP_CONF" <<EOF
-mqtt:
-  host: "localhost"
-  port: 1883
-topics:
-  status: "test/status"
+broker=localhost
+port=$mosquitto_via_toxiproxy_port
+topic=test123/status
 EOF
 
   # Start the binary with the temporary .conf file
   "$binary" -c "$TEMP_CONF" >/dev/null 2>&1 &
   local conf_pid=$!
 
-  # Wait a few seconds for the binary to start and publish online
-  sleep 3
+  # Wait for the "online" message
+  assert_message "test123/status" "online" 10
 
-  # Check that the binary created expected output (online message)
-  if grep -q "online" "$MQTT_OUTPUT_FILE"; then
-      echo "SUCCESS: Binary read .conf file and published status online"
-  else
-      echo "FAILURE: Binary did not read .conf file correctly"
-      cat "$MQTT_OUTPUT_FILE"
-      kill "$conf_pid" >/dev/null 2>&1
-      rm -f "$TEMP_CONF"
-      exit 1
-  fi
-
-  # Cleanup the temp binary
+  # Kill the binary and wait for the "offline" message
+  echo "Stopping (killing) $binary with PID $conf_pid"
   kill "$conf_pid" >/dev/null 2>&1
-  rm -f "$TEMP_CONF"
+  rm "$TEMP_CONF"
 
   ########################################
   # Test 2: Main binary via Toxiproxy
