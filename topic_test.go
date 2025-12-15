@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -10,17 +11,30 @@ import (
 )
 
 func TestExpandTopicWarning(t *testing.T) {
-	// Capture stdout
-	var buf bytes.Buffer
-	old := os.Stdout
-	os.Stdout = &buf
-	defer func() { os.Stdout = old }()
+	// Create a pipe to capture stdout
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("Failed to create pipe: %v", err)
+	}
+
+	oldStdout := os.Stdout
+	os.Stdout = w
+	defer func() { os.Stdout = oldStdout }()
 
 	// Setup Viper with a topic containing an unknown variable
 	viper.Set("topic", "$hostname_$unknown/status")
-
 	rawTopic := viper.GetString("topic")
-	_ = ExpandTopic(rawTopic) // should print a warning
+
+	// Call the function that prints the warning
+	_ = ExpandTopic(rawTopic)
+
+	// Close writer and read output
+	w.Close()
+	var buf bytes.Buffer
+	_, err = io.Copy(&buf, r)
+	if err != nil {
+		t.Fatalf("Failed to read pipe: %v", err)
+	}
 
 	output := buf.String()
 	if !strings.Contains(output, "Warning: topic contains unexpanded variables:") {
