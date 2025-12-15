@@ -4,6 +4,10 @@ set -e
 PKGROOT="deb-pkg"
 PKGNAME="mqttmachinestate"
 VERSION="${1:-0.0.0}"
+if [[ ! "$VERSION" =~ ^[0-9] ]]; then
+    echo "WARNING: Invalid version '$VERSION', using 0.0.0"
+    VERSION="0.0.0"
+fi
 ARCH="${2:-amd64}"
 
 rm -rf "$PKGROOT"
