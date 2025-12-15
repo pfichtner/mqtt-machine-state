@@ -12,29 +12,26 @@ mkdir -p "$PKGROOT/DEBIAN" "$PKGROOT/usr/bin" "$PKGROOT/etc" "$PKGROOT/lib/syste
 # Copy binary
 install -m 0755 binaries/mqttmachinestate "$PKGROOT/usr/bin/"
 
-# Copy default config
+# Copy config and service
 cp debian/mqttmachinestate.conf.tmpl "$PKGROOT/etc/mqttmachinestate.conf"
 chmod 644 "$PKGROOT/etc/mqttmachinestate.conf"
-chown root:root "$PKGROOT/etc/mqttmachinestate.conf"
 
-# Copy systemd service
 cp debian/mqtt-machine.service.tmpl "$PKGROOT/lib/systemd/system/mqtt-machine.service"
 chmod 644 "$PKGROOT/lib/systemd/system/mqtt-machine.service"
-chown root:root "$PKGROOT/lib/systemd/system/mqtt-machine.service"
 
-# Copy README (optional)
+# Optional: copy README
 [ -f README.md ] && cp README.md "$PKGROOT/usr/share/doc/$PKGNAME/"
 
 # Render control
 envsubst < debian/control.tmpl > "$PKGROOT/DEBIAN/control"
 
-# Copy maintainer scripts
+# Maintainer scripts
 cp debian/postinst.tmpl "$PKGROOT/DEBIAN/postinst"
 cp debian/prerm.tmpl "$PKGROOT/DEBIAN/prerm"
 chmod 755 "$PKGROOT/DEBIAN/postinst" "$PKGROOT/DEBIAN/prerm"
 
-# Build the .deb
-dpkg-deb --build "$PKGROOT"
+# Build .deb using fakeroot so ownership metadata is correct
+fakeroot dpkg-deb --build "$PKGROOT"
 
 # Move to artifacts
 mkdir -p publish-artifacts
