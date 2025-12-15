@@ -57,7 +57,7 @@ func main() {
 	// Use viper.GetString, viper.GetInt, etc., to get configuration values
 	brokerHost = viper.GetString("broker")
 	port = viper.GetInt("port")
-	topic := ExpandTopic(viper.GetString("topic"))
+	topic := ExpandTopic(viper.GetString("topic"), os.Stdout)
 	retained = viper.GetBool("retained")
 	qos = viper.GetInt("qos")
 

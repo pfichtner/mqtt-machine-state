@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"io"
 	"os"
 	"strings"
 	"testing"
@@ -11,33 +10,38 @@ import (
 )
 
 func TestExpandTopicWarning(t *testing.T) {
-	// Create a pipe to capture stdout
-	r, w, err := os.Pipe()
-	if err != nil {
-		t.Fatalf("Failed to create pipe: %v", err)
-	}
-
-	oldStdout := os.Stdout
-	os.Stdout = w
-	defer func() { os.Stdout = oldStdout }()
+	var buf bytes.Buffer
 
 	// Setup Viper with a topic containing an unknown variable
 	viper.Set("topic", "$hostname_$unknown/status")
 	rawTopic := viper.GetString("topic")
 
-	// Call the function that prints the warning
-	_ = ExpandTopic(rawTopic)
-
-	// Close writer and read output
-	w.Close()
-	var buf bytes.Buffer
-	_, err = io.Copy(&buf, r)
-	if err != nil {
-		t.Fatalf("Failed to read pipe: %v", err)
-	}
+	// Call function and capture output
+	_ = ExpandTopic(rawTopic, &buf)
 
 	output := buf.String()
 	if !strings.Contains(output, "Warning: topic contains unexpanded variables:") {
 		t.Errorf("Expected warning not printed, got: %s", output)
+	}
+}
+
+func TestExpandTopicHostname(t *testing.T) {
+	var buf bytes.Buffer
+	hostname, _ := os.Hostname()
+	rawTopic := "$hostname/status"
+
+	result := ExpandTopic(rawTopic, &buf)
+
+	if !strings.HasPrefix(result, hostname) {
+		t.Errorf("Expected topic to start with hostname %q, got: %q", hostname, result)
+	}
+	if !strings.HasSuffix(result, "/status") {
+		t.Errorf("Expected topic to end with /status, got: %q", result)
+	}
+
+	// Ensure no warning printed
+	output := buf.String()
+	if output != "" {
+		t.Errorf("Did not expect any warning, got: %s", output)
 	}
 }
