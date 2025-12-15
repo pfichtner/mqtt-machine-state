@@ -22,13 +22,6 @@ var (
 )
 
 func init() {
-	hostname, err := os.Hostname()
-	if err != nil {
-		fmt.Println("Error getting hostname:", err)
-		os.Exit(1)
-	}
-	os.Setenv("hostname", hostname)
-
 	pflag.StringVarP(&configFile, "config", "c", "", "Config file name")
 	pflag.StringVarP(&brokerHost, "broker", "b", "localhost", "MQTT broker host")
 	pflag.IntVarP(&port, "port", "p", 1883, "MQTT broker port")
@@ -64,6 +57,12 @@ func main() {
 	// Use viper.GetString, viper.GetInt, etc., to get configuration values
 	brokerHost = viper.GetString("broker")
 	port = viper.GetInt("port")
+	hostname, err := os.Hostname()
+	if err != nil {
+		fmt.Println("Error getting hostname:", err)
+		os.Exit(1)
+	}
+	os.Setenv("hostname", hostname)
 	rawTopic := viper.GetString("topic")
 	expandedTopic := os.ExpandEnv(rawTopic)
 	if expandedTopic == rawTopic {
