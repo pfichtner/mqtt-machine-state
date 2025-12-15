@@ -1,0 +1,15 @@
+[Unit]
+Description=Run mqttmachinestate at startup
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/mqttmachinestate -c /etc/mqttmachinestate.conf
+Restart=no
+User=mqttmachinestate
+Group=mqttmachinestate
+PermissionsStartOnly=true
+
+[Install]
+WantedBy=multi-user.target
+
