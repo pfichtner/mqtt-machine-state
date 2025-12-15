@@ -62,7 +62,12 @@ func ExpandTopic(rawTopic string) string {
 	}
 
 	os.Setenv("hostname", hostname)
-	return os.ExpandEnv(rawTopic)
+	return os.Expand(rawTopic, func(varName string) string {
+		if val, ok := os.LookupEnv(varName); ok {
+			return val
+		}
+		return "$" + varName
+	})
 }
 
 func main() {
