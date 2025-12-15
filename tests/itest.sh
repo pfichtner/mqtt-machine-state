@@ -138,7 +138,7 @@ run_tests() {
   cat > "$TEMP_CONF" <<EOF
 broker=localhost
 port=$mosquitto_via_toxiproxy_port
-topic=test123/status
+topic=test123/\$hostname/\$unknown/status
 EOF
 
   # Start the binary with the temporary .conf file
@@ -146,7 +146,7 @@ EOF
   local conf_pid=$!
 
   # Wait for the "online" message
-  assert_message "test123/status" "online" 10
+  assert_message "test123/$(hostname)/\$unknown/status" "online" 10
 
   # Kill the binary and wait for the "offline" message
   echo "Stopping (killing) $binary with PID $conf_pid"
