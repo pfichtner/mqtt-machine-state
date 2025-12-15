@@ -3,9 +3,33 @@ set -e
 
 PKGROOT="deb-pkg"
 PKGNAME="mqttmachinestate"
-ARCH="${2:-amd64}"
+GO_ARCH="${2:-amd64}"
 
-# Determine numeric version from Git tag
+# -----------------------------
+# Map Go arch → Debian arch
+# -----------------------------
+case "$GO_ARCH" in
+  amd64)
+    DEB_ARCH="amd64"
+    ;;
+  386)
+    DEB_ARCH="i386"
+    ;;
+  arm)
+    DEB_ARCH="armhf"
+    ;;
+  arm64)
+    DEB_ARCH="arm64"
+    ;;
+  *)
+    echo "ERROR: Unsupported architecture: $GO_ARCH"
+    exit 1
+    ;;
+esac
+
+# -----------------------------
+# Determine numeric version
+# -----------------------------
 if [[ "${1}" =~ ^v?([0-9]+(\.[0-9]+){0,2}.*)$ ]]; then
     VERSION="${BASH_REMATCH[1]}"
 else
@@ -13,8 +37,21 @@ else
     echo "WARNING: Invalid or non-numeric version '$1', using VERSION=$VERSION"
 fi
 
+echo "Building Debian package:"
+echo "  Version: $VERSION"
+echo "  Go arch: $GO_ARCH"
+echo "  Deb arch: $DEB_ARCH"
+
+# -----------------------------
+# Package layout
+# -----------------------------
 rm -rf "$PKGROOT"
-mkdir -p "$PKGROOT/DEBIAN" "$PKGROOT/usr/bin" "$PKGROOT/etc" "$PKGROOT/lib/systemd/system" "$PKGROOT/usr/share/doc/$PKGNAME"
+mkdir -p \
+  "$PKGROOT/DEBIAN" \
+  "$PKGROOT/usr/bin" \
+  "$PKGROOT/etc" \
+  "$PKGROOT/lib/systemd/system" \
+  "$PKGROOT/usr/share/doc/$PKGNAME"
 
 # Copy binary
 install -m 0755 binaries/mqttmachinestate "$PKGROOT/usr/bin/"
@@ -29,8 +66,10 @@ chmod 644 "$PKGROOT/lib/systemd/system/mqtt-machine.service"
 # Optional: copy README
 [ -f README.md ] && cp README.md "$PKGROOT/usr/share/doc/$PKGNAME/"
 
-# Render control
-export VERSION DEB_ARCH="$ARCH"
+# -----------------------------
+# Render control file
+# -----------------------------
+export VERSION DEB_ARCH
 envsubst < debian/control.tmpl > "$PKGROOT/DEBIAN/control"
 
 # Maintainer scripts
@@ -38,10 +77,13 @@ cp debian/postinst.tmpl "$PKGROOT/DEBIAN/postinst"
 cp debian/prerm.tmpl "$PKGROOT/DEBIAN/prerm"
 chmod 755 "$PKGROOT/DEBIAN/postinst" "$PKGROOT/DEBIAN/prerm"
 
-# Build .deb using fakeroot
+# -----------------------------
+# Build .deb
+# -----------------------------
 fakeroot dpkg-deb --build "$PKGROOT"
 
+# -----------------------------
 # Move to artifacts
+# -----------------------------
 mkdir -p publish-artifacts
-mv "${PKGROOT}.deb" "publish-artifacts/${PKGNAME}_${VERSION}_${ARCH}.deb"
-
+mv "${PKGROOT}.deb" "publish-artifacts/${PKGNAME}_${VERSION}_${DEB_ARCH}.deb"
