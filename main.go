@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -53,11 +54,22 @@ func init() {
 	viper.BindPFlag("qos", pflag.Lookup("qos"))
 }
 
+func ExpandTopic(rawTopic string) string {
+	hostname, err := os.Hostname()
+	if err != nil {
+		fmt.Println("Error getting hostname:", err)
+		os.Exit(1)
+	}
+
+	os.Setenv("hostname", hostname)
+	return os.ExpandEnv(rawTopic)
+}
+
 func main() {
 	// Use viper.GetString, viper.GetInt, etc., to get configuration values
 	brokerHost = viper.GetString("broker")
 	port = viper.GetInt("port")
-	topic := ExpandTopic(viper.GetString("topic"), os.Stdout)
+	topic := ExpandTopic(viper.GetString("topic"))
 	retained = viper.GetBool("retained")
 	qos = viper.GetInt("qos")
 
