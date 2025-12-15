@@ -80,7 +80,7 @@ jobs:
        if: (matrix.arch == 'amd64' || matrix.arch == '386')
 
      - name: Build Debian package
-       if: matrix.os == 'linux'
+       if: matrix.os == 'linux' && startsWith(github.ref, 'refs/tags/')
        shell: bash
        run: |
          REF_NAME="${GITHUB_REF_NAME#refs/tags/}"
