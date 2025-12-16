@@ -30,6 +30,10 @@ func init() {
 	pflag.BoolVarP(&retained, "retained", "r", false, "Whether messages should be retained")
 	pflag.IntVarP(&qos, "qos", "q", 0, "Quality of Service (QoS) level")
 	pflag.CommandLine.SortFlags = false
+	// Append defaults to all flags (otherwise defaults like "false" and 0 get omitted)
+	pflag.VisitAll(func(f *pflag.Flag) {
+		f.Usage = fmt.Sprintf("%s (default %v)", f.Usage, f.DefValue)
+	})
 
 	pflag.Parse()
 
