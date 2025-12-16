@@ -36,7 +36,8 @@ func init() {
 		fmt.Printf("Usage of %s:\n", progName)
 		pflag.VisitAll(func(f *pflag.Flag) {
 			usage := f.Usage
-			// Append default only if meaningful
+
+			// Append default if meaningful
 			switch f.Value.Type() {
 				case "string":
 					if f.DefValue != "" {
@@ -45,7 +46,19 @@ func init() {
 				default: // int, bool, etc.
 					usage = fmt.Sprintf("%s (default %v)", usage, f.DefValue)
 			}
-			fmt.Printf("  -%s, --%s %s\t%s\n", f.Shorthand, f.Name, f.Value.Type(), usage)
+
+			// Omit type for bool, include type otherwise
+			typeStr := f.Value.Type()
+			if typeStr == "bool" {
+				typeStr = "" // omit type for boolean flags
+			}
+
+			// Print line, handle spacing if typeStr is empty
+			if typeStr != "" {
+				fmt.Printf("  -%s, --%s %s\t%s\n", f.Shorthand, f.Name, typeStr, usage)
+			} else {
+				fmt.Printf("  -%s, --%s\t%s\n", f.Shorthand, f.Name, usage)
+			}
 		})
 	}
 
