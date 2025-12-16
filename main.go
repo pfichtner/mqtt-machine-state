@@ -30,6 +30,37 @@ func init() {
 	pflag.BoolVarP(&retained, "retained", "r", false, "Whether messages should be retained")
 	pflag.IntVarP(&qos, "qos", "q", 0, "Quality of Service (QoS) level")
 	pflag.CommandLine.SortFlags = false
+	// Custom usage to show defaults neatly
+	pflag.Usage = func() {
+		progName := os.Args[0]
+		fmt.Printf("Usage of %s:\n", progName)
+		pflag.VisitAll(func(f *pflag.Flag) {
+			usage := f.Usage
+
+			// Append default if meaningful
+			switch f.Value.Type() {
+				case "string":
+					if f.DefValue != "" {
+						usage = fmt.Sprintf("%s (default %q)", usage, f.DefValue)
+					}
+				default: // int, bool, etc.
+					usage = fmt.Sprintf("%s (default %v)", usage, f.DefValue)
+			}
+
+			// Omit type for bool, include type otherwise
+			typeStr := f.Value.Type()
+			if typeStr == "bool" {
+				typeStr = "" // omit type for boolean flags
+			}
+
+			// Print line, handle spacing if typeStr is empty
+			if typeStr != "" {
+				fmt.Printf("  -%s, --%s %s\t%s\n", f.Shorthand, f.Name, typeStr, usage)
+			} else {
+				fmt.Printf("  -%s, --%s\t%s\n", f.Shorthand, f.Name, usage)
+			}
+		})
+	}
 
 	pflag.Parse()
 

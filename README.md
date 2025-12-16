@@ -17,7 +17,7 @@ Usage of ./mqttmachinestate:
   -b, --broker string   MQTT broker host (default "localhost")
   -p, --port int        MQTT broker port (default 1883)
   -t, --topic string    MQTT topic (default "$hostname/status")
-  -r, --retained        Whether messages should be retained
-  -q, --qos int         Quality of Service (QoS) level
+  -r, --retained        Whether messages should be retained (default false)
+  -q, --qos int         Quality of Service (QoS) level (default 0)
 pflag: help requested
 ```
